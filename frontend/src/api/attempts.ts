@@ -1,8 +1,11 @@
+import { apiPost } from "./client";
+import type { AttemptResult } from "../types/domain";
+
 export type SubmitAttemptInput = {
-  exerciseId: string;
+  exercise_id: string;
   answer: string;
 };
 
-export async function submitAttempt(_input: SubmitAttemptInput) {
-  throw new Error("submitAttempt is not implemented yet");
+export async function submitAttempt(input: SubmitAttemptInput) {
+  return apiPost<AttemptResult>("/attempts", input);
 }

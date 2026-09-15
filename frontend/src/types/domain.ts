@@ -1,38 +1,44 @@
 export type Goal = {
   id: string;
   title: string;
-  description?: string;
-};
-
-export type Skill = {
-  id: string;
-  title: string;
+  description: string;
 };
 
 export type Topic = {
   id: string;
+  goal_id: string;
   title: string;
-  skillIds: string[];
+  skill_id: string;
+  order: number;
 };
 
 export type Exercise = {
   id: string;
+  topic_id: string;
+  skill_id: string;
   prompt: string;
-  type: "multiple_choice" | "short_text" | "code";
-  skillIds: string[];
-  difficulty: "easy" | "medium" | "hard";
+  difficulty: string;
 };
 
-export type KnowledgeState = {
-  skillId: string;
-  masteryScore: number;
-  confidence: number;
-  evidenceCount: number;
+export type KnowledgeStateItem = {
+  user_id: string;
+  skill_id: string;
+  mastery: number;
+  level: string;
 };
 
 export type Recommendation = {
-  id: string;
-  type: "topic" | "exercise" | "review";
+  type: "start_exercise" | "next_exercise" | "retry_exercise" | "complete_goal";
+  exercise_id: string | null;
   reason: string;
-  targetId: string;
+};
+
+export type AttemptResult = {
+  status: string;
+  exercise_id: string;
+  is_correct: boolean;
+  score: number;
+  old_mastery: number;
+  new_mastery: number;
+  recommendation: Recommendation;
 };
