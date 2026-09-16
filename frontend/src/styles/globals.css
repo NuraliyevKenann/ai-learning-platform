@@ -137,8 +137,8 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .stat-trend { align-self: end; color: #8a92a2; font-size: 10px; }
 
 .dashboard-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr); gap: 18px; align-items: start; }
-.exercise-card, .recommendation-card, .path-card, .history-card, .profile-summary-card { border: 1px solid #e2e5e0; border-radius: 9px; background: #fff; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
-.exercise-card:hover, .recommendation-card:hover, .path-card:hover, .history-card:hover, .profile-summary-card:hover { transform: translateY(-4px); border-color: #a9bf62; animation: border-hop .55s ease both; }
+.exercise-card, .recommendation-card, .path-card { border: 1px solid #e2e5e0; border-radius: 9px; background: #fff; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.exercise-card:hover, .recommendation-card:hover, .path-card:hover { transform: translateY(-4px); border-color: #a9bf62; animation: border-hop .55s ease both; }
 .exercise-card { padding: 28px; }
 .section-heading { margin-bottom: 26px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .section-kicker { display: block; margin-bottom: 5px; color: #7c8598; font-size: 10px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
@@ -166,12 +166,6 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .result-panel button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: none; color: inherit; font-size: 12px; font-weight: 800; }
 
 .right-column { display: grid; gap: 18px; }
-.profile-summary-card { min-height: 104px; padding: 18px; display: grid; grid-template-columns: 48px 1fr; gap: 13px; align-items: center; }
-.profile-summary-card__avatar { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; background: #17213a; color: #cae76b; font-size: 13px; font-weight: 900; }
-.profile-summary-card h3 { margin-bottom: 2px; font-size: 16px; }
-.profile-summary-card p { margin: 0; overflow: hidden; color: #798295; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.profile-summary-card__meta { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
-.profile-summary-card__meta span { padding: 5px 8px; border-radius: 12px; background: #f1f4ef; color: #657086; font-size: 10px; font-weight: 800; }
 .recommendation-card { padding: 24px; position: relative; overflow: hidden; background: #fff7e7; border-color: #eee1c8; }
 .recommendation-card::after { content: ""; position: absolute; width: 90px; height: 90px; right: -35px; top: -35px; border-radius: 50%; background: rgba(241,163,109,.15); }
 .recommendation-card__icon { width: 40px; height: 40px; margin-bottom: 17px; display: grid; place-items: center; border-radius: 8px; color: #875431; background: #f4d4b9; }
@@ -197,19 +191,6 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .reset-button { width: 100%; min-height: 38px; margin-top: 23px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid #e0e4df; border-radius: 7px; background: #f8faf7; color: #687185; font-size: 11px; font-weight: 700; }
 .reset-button:hover:not(:disabled) { color: #17213a; background: #f1f4ef; }
 .reset-button:disabled { opacity: .55; }
-.history-card { padding: 23px; }
-.attempt-list { display: grid; gap: 10px; }
-.attempt-row { padding: 12px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 1px solid #edf0ec; border-radius: 8px; background: #fbfcfa; }
-.attempt-badge { min-width: 68px; height: 26px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border-radius: 13px; font-size: 10px; font-weight: 900; text-transform: uppercase; }
-.attempt-badge--correct { background: #e7f4e8; color: #356a4a; }
-.attempt-badge--retry { background: #fff1e8; color: #9a4f2d; }
-.attempt-row__body { min-width: 0; display: grid; gap: 3px; }
-.attempt-row__body strong { overflow: hidden; color: #263149; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.attempt-row__body span { overflow: hidden; color: #7c8495; font: 600 10px ui-monospace, SFMono-Regular, Menlo, monospace; text-overflow: ellipsis; white-space: nowrap; }
-.attempt-row__meta { display: grid; justify-items: end; gap: 3px; }
-.attempt-row__meta > span { color: #4b856e; font-size: 12px; font-weight: 900; }
-.attempt-row__meta small { display: inline-flex; align-items: center; gap: 4px; color: #98a0ad; font-size: 9px; white-space: nowrap; }
-.empty-history { min-height: 84px; display: grid; place-items: center; gap: 7px; border: 1px dashed #dfe4dd; border-radius: 8px; color: #7d8697; font-size: 12px; text-align: center; }
 
 @media (max-width: 1050px) {
   .sidebar { width: 224px; }
@@ -249,10 +230,7 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
   .topbar__actions .icon-button { display: none; }
   .welcome-card h2 { font-size: 25px; }
   .difficulty { display: none; }
-  .attempt-row { grid-template-columns: 1fr; }
-  .attempt-badge { width: fit-content; }
-  .attempt-row__meta { justify-items: start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stat-card, .toast-notice, .stat-card:hover, .exercise-card:hover, .recommendation-card:hover, .path-card:hover, .history-card:hover, .profile-summary-card:hover, .skill-row:hover { transform: none; animation: none; }
+  .stat-card, .toast-notice, .stat-card:hover, .exercise-card:hover, .recommendation-card:hover, .path-card:hover, .skill-row:hover { transform: none; animation: none; }
 }
