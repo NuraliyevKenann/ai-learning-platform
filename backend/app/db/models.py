@@ -46,3 +46,13 @@ class AttemptRecord(Base):
     old_mastery: Mapped[float] = mapped_column(Float, nullable=False)
     new_mastery: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class CurrentRecommendationRecord(Base):
+    __tablename__ = "current_recommendations"
+
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    type: Mapped[str] = mapped_column(String(80), nullable=False)
+    exercise_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
