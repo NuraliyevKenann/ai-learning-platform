@@ -7,7 +7,7 @@ import {
 
 import { getMe, logout } from "../api/auth";
 import { getAttemptHistory, submitAttempt } from "../api/attempts";
-import { AUTH_REQUIRED_EVENT } from "../api/client";
+import { API_DOCS_URL, AUTH_REQUIRED_EVENT } from "../api/client";
 import { getExercises } from "../api/exercises";
 import { getGoals } from "../api/goals";
 import { getKnowledgeState, resetKnowledgeState } from "../api/knowledge";
@@ -199,7 +199,7 @@ export function App() {
       <aside className={`sidebar ${sidebarOpen ? "sidebar--open" : ""}`}>
         <div className="brand">
           <div className="brand__mark"><Sparkles size={20} strokeWidth={2.2} /></div>
-          <span>skillway</span>
+          <span>SkillWay</span>
           <button className="icon-button sidebar__close" onClick={() => setSidebarOpen(false)} aria-label="Закрыть меню"><X size={20} /></button>
         </div>
         <nav className="main-nav" aria-label="Главная навигация">
@@ -210,7 +210,7 @@ export function App() {
           <a className="nav-link" href="#progress"><Target size={19} /> Мой прогресс</a>
         </nav>
         <div className="sidebar__support">
-          <a className="nav-link" href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer"><CircleHelp size={19} /> API документация</a>
+          <a className="nav-link" href={API_DOCS_URL} target="_blank" rel="noreferrer"><CircleHelp size={19} /> API документация</a>
         </div>
         <div className="profile-card">
           <div className="avatar">{getInitials(user.display_name)}</div>

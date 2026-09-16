@@ -44,11 +44,11 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   return (
     <main className="auth-page">
       <section className="auth-story">
-        <div className="auth-brand"><span><Sparkles size={20} /></span> skillway</div>
+        <div className="auth-brand"><span><Sparkles size={20} /></span> SkillWay</div>
         <div className="auth-story__content">
           <span className="auth-kicker">Персональный учебный маршрут</span>
           <h1>Учитесь с пониманием своего прогресса.</h1>
-          <p>Skillway оценивает ваши ответы, обновляет уровень навыков и подсказывает следующий полезный шаг.</p>
+          <p>SkillWay оценивает ваши ответы, обновляет уровень навыков и подсказывает следующий полезный шаг.</p>
           <div className="auth-benefits">
             <div><span><Check size={16} /></span><p><strong>Личный прогресс</strong>Продолжайте с того места, где остановились.</p></div>
             <div><span><Check size={16} /></span><p><strong>Практика вместо догадок</strong>Каждое задание влияет на вашу карту навыков.</p></div>
@@ -62,7 +62,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         <div className="auth-card">
           <div className="auth-card__heading">
             <span>{mode === "register" ? "Новый аккаунт" : "С возвращением"}</span>
-            <h2>{mode === "register" ? "Создайте свой профиль" : "Войдите в Skillway"}</h2>
+            <h2>{mode === "register" ? "Создайте свой профиль" : "Войдите в SkillWay"}</h2>
             <p>{mode === "register" ? "Начните персональный путь в Python backend." : "Ваш прогресс ждёт вас внутри."}</p>
           </div>
 
