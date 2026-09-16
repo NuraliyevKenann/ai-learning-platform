@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Flame,
+  ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Clock3, Flame,
   LayoutDashboard, LoaderCircle, LogOut, Menu, RefreshCw, RotateCcw,
-  Route, Send, Sparkles, Target, X, XCircle,
+  Route, Send, Sparkles, Target, UserRound, X, XCircle,
 } from "lucide-react";
 
 import { getMe, logout } from "../api/auth";
-import { submitAttempt } from "../api/attempts";
+import { getAttemptHistory, submitAttempt } from "../api/attempts";
 import { AUTH_REQUIRED_EVENT } from "../api/client";
 import { getExercises } from "../api/exercises";
 import { getGoals } from "../api/goals";
@@ -14,7 +14,7 @@ import { getKnowledgeState, resetKnowledgeState } from "../api/knowledge";
 import { getCurrentRecommendation } from "../api/recommendations";
 import { getTopics } from "../api/topics";
 import { AuthScreen } from "../components/AuthScreen";
-import type { AttemptResult, Exercise, Goal, KnowledgeStateItem, Recommendation, Topic, User } from "../types/domain";
+import type { AttemptHistoryItem, AttemptResult, Exercise, Goal, KnowledgeStateItem, Recommendation, Topic, User } from "../types/domain";
 
 type DashboardData = {
   goals: Goal[];
@@ -22,9 +22,10 @@ type DashboardData = {
   exercises: Exercise[];
   knowledge: KnowledgeStateItem[];
   recommendation: Recommendation | null;
+  attempts: AttemptHistoryItem[];
 };
 
-const emptyData: DashboardData = { goals: [], topics: [], exercises: [], knowledge: [], recommendation: null };
+const emptyData: DashboardData = { goals: [], topics: [], exercises: [], knowledge: [], recommendation: null, attempts: [] };
 const skillNames: Record<string, string> = {
   skill_python_variables: "Переменные Python",
   skill_fastapi_routes: "Маршруты FastAPI",
@@ -49,6 +50,10 @@ function getInitials(name: string) {
   return name.split(" ").slice(0, 2).map((part) => part[0]).join("").toUpperCase();
 }
 
+function formatAttemptTime(value: string) {
+  return new Intl.DateTimeFormat("ru", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
+}
+
 export function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -60,13 +65,15 @@ export function App() {
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [progressPulseKey, setProgressPulseKey] = useState(0);
 
   async function loadDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [goals, topics, exercises, knowledge, recommendation] = await Promise.all([
-        getGoals(), getTopics(), getExercises(), getKnowledgeState(), getCurrentRecommendation(),
+      const [goals, topics, exercises, knowledge, recommendation, attempts] = await Promise.all([
+        getGoals(), getTopics(), getExercises(), getKnowledgeState(), getCurrentRecommendation(), getAttemptHistory(),
       ]);
       setData({
         goals: goals.items,
@@ -74,6 +81,7 @@ export function App() {
         exercises: exercises.items,
         knowledge: knowledge.items,
         recommendation: recommendation.recommendation,
+        attempts: attempts.items,
       });
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Не удалось загрузить данные");
@@ -109,6 +117,14 @@ export function App() {
     ? Math.round(data.knowledge.reduce((sum, item) => sum + item.mastery, 0) / data.knowledge.length)
     : 0;
   const completedSkills = data.knowledge.filter((item) => item.mastery >= 70).length;
+  const correctAttempts = data.attempts.filter((attempt) => attempt.is_correct).length;
+  const recentAttempts = data.attempts.slice(0, 4);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timeoutId = window.setTimeout(() => setToast(null), 2600);
+    return () => window.clearTimeout(timeoutId);
+  }, [toast]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -117,10 +133,14 @@ export function App() {
     setError(null);
     try {
       const attempt = await submitAttempt({ exercise_id: currentExercise.id, answer: answer.trim() });
-      const knowledge = await getKnowledgeState();
+      const [knowledge, attempts] = await Promise.all([getKnowledgeState(), getAttemptHistory()]);
       setResult(attempt);
-      setData((current) => ({ ...current, knowledge: knowledge.items, recommendation: attempt.recommendation }));
-      if (attempt.is_correct) setAnswer("");
+      setData((current) => ({ ...current, knowledge: knowledge.items, recommendation: attempt.recommendation, attempts: attempts.items }));
+      setToast(attempt.is_correct ? "Ответ принят. Прогресс обновлён." : "Ответ сохранён. Попробуйте ещё раз.");
+      setProgressPulseKey((key) => key + 1);
+      if (attempt.is_correct) {
+        setAnswer("");
+      }
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Не удалось проверить ответ");
     } finally {
@@ -134,9 +154,11 @@ export function App() {
     try {
       const reset = await resetKnowledgeState();
       const recommendation = await getCurrentRecommendation();
-      setData((current) => ({ ...current, knowledge: reset.items, recommendation: recommendation.recommendation }));
+      const attempts = await getAttemptHistory();
+      setData((current) => ({ ...current, knowledge: reset.items, recommendation: recommendation.recommendation, attempts: attempts.items }));
       setAnswer("");
       setResult(null);
+      setToast("Прогресс сброшен.");
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Не удалось сбросить прогресс");
     } finally {
@@ -168,6 +190,12 @@ export function App() {
 
   return (
     <div className="app-shell">
+      {toast && (
+        <div className="toast-notice" role="status">
+          <Check size={17} />
+          <span>{toast}</span>
+        </div>
+      )}
       <aside className={`sidebar ${sidebarOpen ? "sidebar--open" : ""}`}>
         <div className="brand">
           <div className="brand__mark"><Sparkles size={20} strokeWidth={2.2} /></div>
@@ -221,9 +249,9 @@ export function App() {
             </section>
 
             <section className="stats-grid" id="progress" aria-label="Статистика обучения">
-              <article className="stat-card"><div className="stat-icon stat-icon--blue"><Target size={20} /></div><div><span>Общий прогресс</span><strong>{averageMastery}%</strong></div><span className="stat-trend">по навыкам</span></article>
+              <article className="stat-card stat-card--pulse" key={progressPulseKey}><div className="stat-icon stat-icon--blue"><Target size={20} /></div><div><span>Общий прогресс</span><strong>{averageMastery}%</strong></div><span className="stat-trend">по навыкам</span></article>
               <article className="stat-card"><div className="stat-icon stat-icon--mint"><Check size={20} /></div><div><span>Освоено навыков</span><strong>{completedSkills}</strong></div><span className="stat-trend">из {data.knowledge.length}</span></article>
-              <article className="stat-card"><div className="stat-icon stat-icon--orange"><BookOpen size={20} /></div><div><span>Доступно заданий</span><strong>{data.exercises.length}</strong></div><span className="stat-trend">MVP курс</span></article>
+              <article className="stat-card"><div className="stat-icon stat-icon--orange"><BookOpen size={20} /></div><div><span>Попытки</span><strong>{data.attempts.length}</strong></div><span className="stat-trend">{correctAttempts} correct</span></article>
             </section>
 
             <div className="dashboard-grid">
@@ -249,6 +277,19 @@ export function App() {
               </section>
 
               <aside className="right-column">
+                <section className="profile-summary-card">
+                  <div className="profile-summary-card__avatar">{getInitials(user.display_name)}</div>
+                  <div>
+                    <span className="section-kicker">Profile</span>
+                    <h3>{user.display_name}</h3>
+                    <p>{user.email}</p>
+                  </div>
+                  <div className="profile-summary-card__meta">
+                    <span>{averageMastery}% mastery</span>
+                    <span>{data.attempts.length} attempts</span>
+                  </div>
+                </section>
+
                 <section className="recommendation-card">
                   <div className="recommendation-card__icon"><Sparkles size={20} /></div>
                   <span className="section-kicker">Умная рекомендация</span>
@@ -269,6 +310,38 @@ export function App() {
                     ))}
                   </div>
                   <button className="reset-button" onClick={() => void handleReset()} disabled={resetting}><RotateCcw className={resetting ? "spin" : ""} size={16} />{resetting ? "Сбрасываем…" : "Сбросить демо-прогресс"}</button>
+                </section>
+
+                <section className="history-card">
+                  <div className="section-heading section-heading--compact">
+                    <div><span className="section-kicker">История</span><h3>Последние попытки</h3></div>
+                    <span>{data.attempts.length}</span>
+                  </div>
+                  {recentAttempts.length ? (
+                    <div className="attempt-list">
+                      {recentAttempts.map((attempt) => (
+                        <article className="attempt-row" key={attempt.id}>
+                          <div className={`attempt-badge ${attempt.is_correct ? "attempt-badge--correct" : "attempt-badge--retry"}`}>
+                            {attempt.is_correct ? <Check size={14} /> : <RotateCcw size={14} />}
+                            {attempt.is_correct ? "correct" : "retry"}
+                          </div>
+                          <div className="attempt-row__body">
+                            <strong>{attempt.exercise_id.replace(/^ex_/, "").replaceAll("_", " ")}</strong>
+                            <span>{attempt.answer}</span>
+                          </div>
+                          <div className="attempt-row__meta">
+                            <span>+{Math.round(attempt.new_mastery - attempt.old_mastery)}</span>
+                            <small><Clock3 size={12} /> {formatAttemptTime(attempt.created_at)}</small>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-history">
+                      <UserRound size={21} />
+                      <span>Попыток пока нет. Решите первое задание.</span>
+                    </div>
+                  )}
                 </section>
               </aside>
             </div>

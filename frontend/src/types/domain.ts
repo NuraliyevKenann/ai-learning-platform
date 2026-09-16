@@ -43,6 +43,17 @@ export type AttemptResult = {
   recommendation: Recommendation;
 };
 
+export type AttemptHistoryItem = {
+  id: number;
+  exercise_id: string;
+  answer: string;
+  is_correct: boolean;
+  score: number;
+  old_mastery: number;
+  new_mastery: number;
+  created_at: string;
+};
+
 export type User = {
   id: string;
   email: string;
