@@ -3,6 +3,7 @@
 import json
 
 from app.domain.assessment.schemas import AttemptResultResponse
+from app.domain.assessment.repository import record_attempt
 from app.domain.content.repository import get_exercise_by_id
 from app.domain.learning.repository import get_mastery, set_mastery
 from app.domain.recommendations.service import (
@@ -35,6 +36,15 @@ def submit_attempt(
     old_mastery = get_mastery(user_id, skill_id)
     new_mastery = update_mastery(old_mastery=old_mastery, attempt_score=score)
     set_mastery(user_id=user_id, skill_id=skill_id, mastery=new_mastery)
+    record_attempt(
+        user_id=user_id,
+        exercise_id=exercise_id,
+        answer=answer,
+        is_correct=is_correct,
+        score=score,
+        old_mastery=old_mastery,
+        new_mastery=new_mastery,
+    )
 
     recommendation = build_recommendation(
         user_id=user_id,

@@ -6,13 +6,12 @@ from app.tests.integration.helpers import register_user
 
 def test_reset_knowledge_state_returns_mastery_to_zero() -> None:
     client = TestClient(app)
-    headers, user = register_user(client)
+    user = register_user(client)
     client.post(
         "/api/v1/attempts",
-        headers=headers,
         json={"exercise_id": "ex_python_variables_1", "answer": "x = 5"},
     )
-    response = client.post("/api/v1/knowledge/reset", headers=headers)
+    response = client.post("/api/v1/knowledge/reset")
     assert response.status_code == 200
     assert response.json() == {
         "status": "ok",
@@ -24,15 +23,15 @@ def test_reset_knowledge_state_returns_mastery_to_zero() -> None:
 
 
 def test_progress_is_isolated_between_users() -> None:
-    client = TestClient(app)
-    first_headers, _ = register_user(client, "First User")
-    second_headers, _ = register_user(client, "Second User")
-    client.post(
+    first_client = TestClient(app)
+    second_client = TestClient(app)
+    register_user(first_client, "First User")
+    register_user(second_client, "Second User")
+    first_client.post(
         "/api/v1/attempts",
-        headers=first_headers,
         json={"exercise_id": "ex_python_variables_1", "answer": "x = 5"},
     )
-    first_state = client.get("/api/v1/knowledge/state", headers=first_headers).json()
-    second_state = client.get("/api/v1/knowledge/state", headers=second_headers).json()
+    first_state = first_client.get("/api/v1/knowledge/state").json()
+    second_state = second_client.get("/api/v1/knowledge/state").json()
     assert first_state["items"][0]["mastery"] == 30.0
     assert second_state["items"][0]["mastery"] == 0.0
