@@ -72,3 +72,51 @@ def test_submit_attempt_requires_authentication() -> None:
         json={"exercise_id": "ex_python_variables_1", "answer": "x=5"},
     )
     assert response.status_code == 401
+
+
+def test_attempt_history_lists_current_users_attempts() -> None:
+    client = TestClient(app)
+    register_user(client)
+    client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_1", "answer": "wrong"},
+    )
+    client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_1", "answer": "x = 5"},
+    )
+
+    response = client.get("/api/v1/attempts/history")
+
+    assert response.status_code == 200
+    items = response.json()["items"]
+    assert len(items) == 2
+    assert items[0]["exercise_id"] == "ex_python_variables_1"
+    assert items[0]["answer"] == "x = 5"
+    assert items[0]["is_correct"] is True
+    assert items[0]["old_mastery"] == 0.0
+    assert items[0]["new_mastery"] == 30.0
+    assert items[1]["answer"] == "wrong"
+    assert items[1]["is_correct"] is False
+
+
+def test_attempt_history_is_isolated_between_users() -> None:
+    first_client = TestClient(app)
+    second_client = TestClient(app)
+    register_user(first_client, "First User")
+    register_user(second_client, "Second User")
+    first_client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_1", "answer": "x = 5"},
+    )
+
+    response = second_client.get("/api/v1/attempts/history")
+
+    assert response.status_code == 200
+    assert response.json() == {"items": []}
+
+
+def test_attempt_history_requires_authentication() -> None:
+    client = TestClient(app)
+    response = client.get("/api/v1/attempts/history")
+    assert response.status_code == 401

@@ -89,6 +89,11 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .loading-state { min-height: 360px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #677085; }
 .spin { animation: spin .9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes border-hop {
+  0% { box-shadow: 0 0 0 0 rgba(93,127,168,0), 0 0 0 0 rgba(202,231,107,0); }
+  42% { box-shadow: 0 12px 30px rgba(23,33,58,.09), 0 0 0 3px rgba(202,231,107,.55); }
+  100% { box-shadow: 0 10px 24px rgba(23,33,58,.08), 0 0 0 1px rgba(93,127,168,.2); }
+}
 
 .welcome-card { max-width: 1320px; min-height: 216px; margin: 0 auto 18px; padding: 36px 42px; display: flex; align-items: center; justify-content: space-between; gap: 30px; overflow: hidden; position: relative; border-radius: 10px; background: #dce7f7; }
 .welcome-card::before, .welcome-card::after { content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(47,78,124,.11); }
@@ -108,7 +113,8 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .goal-progress p { color: #5c687d; font-size: 11px; line-height: 1.4; }
 
 .stats-grid { max-width: 1320px; margin: 0 auto 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.stat-card { min-height: 92px; padding: 18px; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 13px; border: 1px solid #e3e6e1; border-radius: 8px; background: #fff; }
+.stat-card { min-height: 92px; padding: 18px; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 13px; border: 1px solid #e3e6e1; border-radius: 8px; background: #fff; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.stat-card:hover { transform: translateY(-4px); border-color: #aec46a; animation: border-hop .55s ease both; }
 .stat-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 8px; }
 .stat-icon--blue { color: #3d6291; background: #e7eef9; }
 .stat-icon--mint { color: #397962; background: #e1f2e9; }
@@ -119,7 +125,8 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .stat-trend { align-self: end; color: #8a92a2; font-size: 10px; }
 
 .dashboard-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr); gap: 18px; align-items: start; }
-.exercise-card, .recommendation-card, .path-card { border: 1px solid #e2e5e0; border-radius: 9px; background: #fff; }
+.exercise-card, .recommendation-card, .path-card { border: 1px solid #e2e5e0; border-radius: 9px; background: #fff; transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease; }
+.exercise-card:hover, .recommendation-card:hover, .path-card:hover { transform: translateY(-4px); border-color: #a9bf62; animation: border-hop .55s ease both; }
 .exercise-card { padding: 28px; }
 .section-heading { margin-bottom: 26px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .section-kicker { display: block; margin-bottom: 5px; color: #7c8598; font-size: 10px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
@@ -158,7 +165,8 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .section-heading--compact h3 { font-size: 17px; }
 .section-heading--compact > span { color: #788195; font-size: 11px; font-weight: 700; }
 .skill-list { display: grid; gap: 20px; }
-.skill-row { display: grid; grid-template-columns: 28px 1fr 34px; align-items: center; gap: 10px; }
+.skill-row { margin: 0 -8px; padding: 8px; display: grid; grid-template-columns: 28px 1fr 34px; align-items: center; gap: 10px; border: 1px solid transparent; border-radius: 8px; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+.skill-row:hover { transform: translateY(-2px); border-color: #dce8a6; background: #fbfdf4; }
 .skill-step { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #d9ded8; border-radius: 50%; color: #8b93a2; font-size: 11px; font-weight: 800; }
 .skill-step--active { border-color: #6383ac; background: #e8eff8; color: #3c6292; }
 .skill-step--done { border-color: #4b856e; background: #4b856e; color: #fff; }
@@ -209,4 +217,7 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
   .topbar__actions .icon-button { display: none; }
   .welcome-card h2 { font-size: 25px; }
   .difficulty { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stat-card:hover, .exercise-card:hover, .recommendation-card:hover, .path-card:hover, .skill-row:hover { transform: none; animation: none; }
 }
