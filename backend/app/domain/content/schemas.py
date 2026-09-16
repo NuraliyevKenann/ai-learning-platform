@@ -21,8 +21,11 @@ class Exercise(BaseModel):
     id: str
     topic_id: str
     skill_id: str
+    title: str
     prompt: str
     difficulty: str
+    estimated_minutes: int
+    hint: str
 
 
 class GoalListResponse(BaseModel):

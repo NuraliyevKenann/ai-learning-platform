@@ -2,10 +2,11 @@
 
 from app.core.database import SessionLocal, init_database
 from app.db.models import KnowledgeStateRecord
+from app.db.seed import TOPICS
 
 _initial_knowledge_state: dict[str, float] = {
-    "skill_python_variables": 0.0,
-    "skill_fastapi_routes": 0.0,
+    str(topic["skill_id"]): 0.0
+    for topic in sorted(TOPICS, key=lambda item: int(item["order"]))
 }
 
 

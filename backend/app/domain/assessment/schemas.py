@@ -19,6 +19,10 @@ class AttemptResultResponse(BaseModel):
     score: float
     old_mastery: float
     new_mastery: float
+    feedback: str
+    hint: str | None
+    solution: str | None
+    explanation: str
     recommendation: Recommendation
 
 

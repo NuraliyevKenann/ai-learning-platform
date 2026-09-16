@@ -17,7 +17,9 @@ def test_reset_knowledge_state_returns_mastery_to_zero() -> None:
         "status": "ok",
         "items": [
             {"user_id": user["id"], "skill_id": "skill_python_variables", "mastery": 0.0, "level": "weak"},
+            {"user_id": user["id"], "skill_id": "skill_http_api_basics", "mastery": 0.0, "level": "weak"},
             {"user_id": user["id"], "skill_id": "skill_fastapi_routes", "mastery": 0.0, "level": "weak"},
+            {"user_id": user["id"], "skill_id": "skill_database_basics", "mastery": 0.0, "level": "weak"},
         ],
     }
 

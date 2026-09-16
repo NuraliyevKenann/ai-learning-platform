@@ -19,9 +19,13 @@ def test_submit_attempt_updates_mastery_and_recommendation() -> None:
         "score": 100.0,
         "old_mastery": 0.0,
         "new_mastery": 30.0,
+        "feedback": "Correct. Review the explanation, then continue with the recommendation.",
+        "hint": None,
+        "solution": "x = 5",
+        "explanation": "A variable stores a value under a name. Here, x becomes a name for the number 5.",
         "recommendation": {
             "type": "next_exercise",
-            "exercise_id": "ex_fastapi_health_1",
+            "exercise_id": "ex_python_variables_2",
             "reason": (
                 "Your mastery for skill_python_variables is now 30.0, "
                 "classified as weak. Continue with the next exercise."
@@ -63,6 +67,24 @@ def test_submit_attempt_accepts_answer_with_different_spacing() -> None:
     assert response.status_code == 200
     assert response.json()["is_correct"] is True
     assert response.json()["new_mastery"] == 30.0
+
+
+def test_submit_attempt_returns_hint_and_solution_for_wrong_answer() -> None:
+    client = TestClient(app)
+    register_user(client)
+
+    response = client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_http_api_basics_1", "answer": "POST"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["is_correct"] is False
+    assert body["feedback"] == "For reading data, use GET. POST is usually for creating or submitting data."
+    assert body["hint"] == "Think about the method browsers use when opening a page URL."
+    assert body["solution"] == "GET"
+    assert body["explanation"] == "GET is normally used for safe read operations, like listing goals or exercises."
 
 
 def test_submit_attempt_requires_authentication() -> None:

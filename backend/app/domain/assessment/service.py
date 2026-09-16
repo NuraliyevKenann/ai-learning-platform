@@ -32,7 +32,7 @@ def submit_attempt(
 
     is_correct = _answers_match(
         submitted_answer=answer,
-        expected_answer=str(exercise["expected_answer"]),
+        expected_answers=_expected_answers(exercise),
     )
     score = 100.0 if is_correct else 0.0
 
@@ -66,11 +66,34 @@ def submit_attempt(
         score=score,
         old_mastery=old_mastery,
         new_mastery=new_mastery,
+        feedback=_build_feedback(exercise=exercise, is_correct=is_correct),
+        hint=None if is_correct else str(exercise["hint"]),
+        solution=str(exercise["solution"]),
+        explanation=str(exercise["explanation"]),
         recommendation=recommendation,
     )
 
 
-def _answers_match(submitted_answer: str, expected_answer: str) -> bool:
+def _expected_answers(exercise: dict) -> list[str]:
+    answers = [str(exercise["expected_answer"])]
+    answers.extend(str(answer) for answer in exercise.get("acceptable_answers", []))
+    return answers
+
+
+def _build_feedback(exercise: dict, is_correct: bool) -> str:
+    if is_correct:
+        return "Correct. Review the explanation, then continue with the recommendation."
+    return str(exercise["incorrect_feedback"])
+
+
+def _answers_match(submitted_answer: str, expected_answers: list[str]) -> bool:
+    return any(
+        _single_answer_matches(submitted_answer=submitted_answer, expected_answer=expected_answer)
+        for expected_answer in expected_answers
+    )
+
+
+def _single_answer_matches(submitted_answer: str, expected_answer: str) -> bool:
     submitted_json = _parse_json(submitted_answer)
     expected_json = _parse_json(expected_answer)
     if submitted_json is not None and expected_json is not None:
