@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.api.dependencies import get_current_user
 from app.domain.assessment.schemas import (
@@ -17,8 +17,11 @@ router = APIRouter()
 
 
 @router.get("/history", response_model=AttemptHistoryResponse)
-def list_attempt_history(user: User = Depends(get_current_user)) -> AttemptHistoryResponse:
-    return get_attempt_history(user.id)
+def list_attempt_history(
+    limit: int | None = Query(default=None, ge=1, le=100),
+    user: User = Depends(get_current_user),
+) -> AttemptHistoryResponse:
+    return get_attempt_history(user.id, limit=limit)
 
 
 @router.post("", response_model=AttemptResultResponse)
