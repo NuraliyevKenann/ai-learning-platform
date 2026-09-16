@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 from app.core.database import SessionLocal, init_database
 from app.db.models import AttemptRecord
+from app.domain.assessment.schemas import AttemptHistoryItem
 
 
 def record_attempt(
@@ -30,3 +31,27 @@ def record_attempt(
             )
         )
         db.commit()
+
+
+def list_attempt_history(user_id: str) -> list[AttemptHistoryItem]:
+    init_database()
+    with SessionLocal() as db:
+        records = (
+            db.query(AttemptRecord)
+            .filter(AttemptRecord.user_id == user_id)
+            .order_by(AttemptRecord.created_at.desc(), AttemptRecord.id.desc())
+            .all()
+        )
+        return [
+            AttemptHistoryItem(
+                id=record.id,
+                exercise_id=record.exercise_id,
+                answer=record.answer,
+                is_correct=record.is_correct,
+                score=record.score,
+                old_mastery=record.old_mastery,
+                new_mastery=record.new_mastery,
+                created_at=record.created_at,
+            )
+            for record in records
+        ]

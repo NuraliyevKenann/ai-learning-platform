@@ -2,8 +2,8 @@
 
 import json
 
-from app.domain.assessment.schemas import AttemptResultResponse
-from app.domain.assessment.repository import record_attempt
+from app.domain.assessment.repository import list_attempt_history, record_attempt
+from app.domain.assessment.schemas import AttemptHistoryResponse, AttemptResultResponse
 from app.domain.content.repository import get_exercise_by_id
 from app.domain.learning.repository import get_mastery, set_mastery
 from app.domain.recommendations.service import (
@@ -15,6 +15,10 @@ from app.learning_engine.mastery import update_mastery
 
 class ExerciseNotFoundError(Exception):
     """Raised when an attempt references an unknown exercise."""
+
+
+def get_attempt_history(user_id: str) -> AttemptHistoryResponse:
+    return AttemptHistoryResponse(items=list_attempt_history(user_id))
 
 
 def submit_attempt(
