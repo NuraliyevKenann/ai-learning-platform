@@ -42,3 +42,16 @@ export type AttemptResult = {
   new_mastery: number;
   recommendation: Recommendation;
 };
+
+export type User = {
+  id: string;
+  email: string;
+  display_name: string;
+  created_at: string;
+};
+
+export type AuthResponse = {
+  access_token: string;
+  token_type: "bearer";
+  user: User;
+};

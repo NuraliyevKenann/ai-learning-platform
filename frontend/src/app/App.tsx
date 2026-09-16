@@ -5,13 +5,16 @@ import {
   Route, Send, Sparkles, Target, X, XCircle,
 } from "lucide-react";
 
+import { getMe, logout } from "../api/auth";
 import { submitAttempt } from "../api/attempts";
+import { clearAuthToken, getAuthToken } from "../api/client";
 import { getExercises } from "../api/exercises";
 import { getGoals } from "../api/goals";
 import { getKnowledgeState, resetKnowledgeState } from "../api/knowledge";
 import { getCurrentRecommendation } from "../api/recommendations";
 import { getTopics } from "../api/topics";
-import type { AttemptResult, Exercise, Goal, KnowledgeStateItem, Recommendation, Topic } from "../types/domain";
+import { AuthScreen } from "../components/AuthScreen";
+import type { AttemptResult, Exercise, Goal, KnowledgeStateItem, Recommendation, Topic, User } from "../types/domain";
 
 type DashboardData = {
   goals: Goal[];
@@ -42,7 +45,13 @@ function getRecommendationTitle(type?: Recommendation["type"]) {
   return "Начните с основ";
 }
 
+function getInitials(name: string) {
+  return name.split(" ").slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+}
+
 export function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [data, setData] = useState<DashboardData>(emptyData);
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<AttemptResult | null>(null);
@@ -73,7 +82,20 @@ export function App() {
     }
   }
 
-  useEffect(() => { void loadDashboard(); }, []);
+  useEffect(() => {
+    if (!getAuthToken()) {
+      setAuthLoading(false);
+      return;
+    }
+    void getMe()
+      .then(setUser)
+      .catch(() => clearAuthToken())
+      .finally(() => setAuthLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (user) void loadDashboard();
+  }, [user?.id]);
 
   const currentExercise = useMemo(() => {
     const recommendedId = data.recommendation?.exercise_id;
@@ -126,6 +148,22 @@ export function App() {
     document.querySelector(".exercise-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  async function handleLogout() {
+    await logout();
+    setUser(null);
+    setData(emptyData);
+    setResult(null);
+    setAnswer("");
+  }
+
+  if (authLoading) {
+    return <div className="auth-loading"><div className="brand__mark"><Sparkles size={20} /></div><LoaderCircle className="spin" size={24} /></div>;
+  }
+
+  if (!user) {
+    return <AuthScreen onAuthenticated={setUser} />;
+  }
+
   return (
     <div className="app-shell">
       <aside className={`sidebar ${sidebarOpen ? "sidebar--open" : ""}`}>
@@ -145,9 +183,9 @@ export function App() {
           <a className="nav-link" href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer"><CircleHelp size={19} /> API документация</a>
         </div>
         <div className="profile-card">
-          <div className="avatar">ДУ</div>
-          <div><strong>Демо ученик</strong><span>Начинающий</span></div>
-          <LogOut size={18} aria-hidden="true" />
+          <div className="avatar">{getInitials(user.display_name)}</div>
+          <div><strong>{user.display_name}</strong><span>{user.email}</span></div>
+          <button className="profile-logout" onClick={() => void handleLogout()} aria-label="Выйти из аккаунта" title="Выйти"><LogOut size={18} /></button>
         </div>
       </aside>
       {sidebarOpen && <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Закрыть меню" />}

@@ -1,24 +1,17 @@
 from fastapi.testclient import TestClient
 
-from app.domain.learning.repository import reset_knowledge_state
-from app.domain.recommendations.repository import reset_current_recommendation
 from app.main import app
+from app.tests.integration.helpers import register_user
 
 
 def test_submit_attempt_updates_mastery_and_recommendation() -> None:
-    reset_knowledge_state()
-    reset_current_recommendation()
-
     client = TestClient(app)
-
+    headers, _ = register_user(client)
     response = client.post(
         "/api/v1/attempts",
-        json={
-            "exercise_id": "ex_python_variables_1",
-            "answer": "x = 5",
-        },
+        headers=headers,
+        json={"exercise_id": "ex_python_variables_1", "answer": "x = 5"},
     )
-
     assert response.status_code == 200
     assert response.json() == {
         "status": "ok",
@@ -39,60 +32,47 @@ def test_submit_attempt_updates_mastery_and_recommendation() -> None:
 
 
 def test_submit_attempt_returns_404_for_unknown_exercise() -> None:
-    reset_knowledge_state()
-    reset_current_recommendation()
-
     client = TestClient(app)
-
+    headers, _ = register_user(client)
     response = client.post(
         "/api/v1/attempts",
-        json={
-            "exercise_id": "unknown_exercise",
-            "answer": "x = 5",
-        },
+        headers=headers,
+        json={"exercise_id": "unknown_exercise", "answer": "x = 5"},
     )
-
     assert response.status_code == 404
     assert response.json() == {"detail": "Exercise not found."}
 
 
 def test_submit_attempt_accepts_equivalent_json_answer() -> None:
-    reset_knowledge_state()
-    reset_current_recommendation()
-
     client = TestClient(app)
-
+    headers, _ = register_user(client)
     response = client.post(
         "/api/v1/attempts",
-        json={
-            "exercise_id": "ex_fastapi_health_1",
-            "answer": '{"status":"ok"}',
-        },
+        headers=headers,
+        json={"exercise_id": "ex_fastapi_health_1", "answer": '{"status":"ok"}'},
     )
-
-    body = response.json()
-
     assert response.status_code == 200
-    assert body["is_correct"] is True
-    assert body["new_mastery"] == 30.0
+    assert response.json()["is_correct"] is True
+    assert response.json()["new_mastery"] == 30.0
 
 
 def test_submit_attempt_accepts_answer_with_different_spacing() -> None:
-    reset_knowledge_state()
-    reset_current_recommendation()
-
     client = TestClient(app)
-
+    headers, _ = register_user(client)
     response = client.post(
         "/api/v1/attempts",
-        json={
-            "exercise_id": "ex_python_variables_1",
-            "answer": "x=5",
-        },
+        headers=headers,
+        json={"exercise_id": "ex_python_variables_1", "answer": "x=5"},
     )
-
-    body = response.json()
-
     assert response.status_code == 200
-    assert body["is_correct"] is True
-    assert body["new_mastery"] == 30.0
+    assert response.json()["is_correct"] is True
+    assert response.json()["new_mastery"] == 30.0
+
+
+def test_submit_attempt_requires_authentication() -> None:
+    client = TestClient(app)
+    response = client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_1", "answer": "x=5"},
+    )
+    assert response.status_code == 401

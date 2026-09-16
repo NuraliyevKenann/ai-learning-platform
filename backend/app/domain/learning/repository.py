@@ -1,31 +1,31 @@
 """Learning database access."""
 
-USER_ID = "demo_user"
-
-_knowledge_state: dict[str, float] = {
+_initial_knowledge_state: dict[str, float] = {
     "skill_python_variables": 0.0,
     "skill_fastapi_routes": 0.0,
 }
-
-_initial_knowledge_state = _knowledge_state.copy()
-
-
-def get_user_id() -> str:
-    return USER_ID
+_knowledge_state_by_user: dict[str, dict[str, float]] = {}
 
 
-def list_skill_mastery() -> dict[str, float]:
-    return _knowledge_state.copy()
+def _get_or_create_state(user_id: str) -> dict[str, float]:
+    return _knowledge_state_by_user.setdefault(user_id, _initial_knowledge_state.copy())
 
 
-def get_mastery(skill_id: str) -> float:
-    return _knowledge_state.get(skill_id, 0.0)
+def list_skill_mastery(user_id: str) -> dict[str, float]:
+    return _get_or_create_state(user_id).copy()
 
 
-def set_mastery(skill_id: str, mastery: float) -> None:
-    _knowledge_state[skill_id] = mastery
+def get_mastery(user_id: str, skill_id: str) -> float:
+    return _get_or_create_state(user_id).get(skill_id, 0.0)
 
 
-def reset_knowledge_state() -> None:
-    _knowledge_state.clear()
-    _knowledge_state.update(_initial_knowledge_state)
+def set_mastery(user_id: str, skill_id: str, mastery: float) -> None:
+    _get_or_create_state(user_id)[skill_id] = mastery
+
+
+def reset_knowledge_state(user_id: str) -> None:
+    _knowledge_state_by_user[user_id] = _initial_knowledge_state.copy()
+
+
+def clear_all_knowledge_for_tests() -> None:
+    _knowledge_state_by_user.clear()
