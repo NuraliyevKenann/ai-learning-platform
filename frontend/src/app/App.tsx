@@ -7,7 +7,7 @@ import {
 
 import { getMe, logout } from "../api/auth";
 import { submitAttempt } from "../api/attempts";
-import { clearAuthToken, getAuthToken } from "../api/client";
+import { AUTH_REQUIRED_EVENT } from "../api/client";
 import { getExercises } from "../api/exercises";
 import { getGoals } from "../api/goals";
 import { getKnowledgeState, resetKnowledgeState } from "../api/knowledge";
@@ -83,14 +83,16 @@ export function App() {
   }
 
   useEffect(() => {
-    if (!getAuthToken()) {
-      setAuthLoading(false);
-      return;
-    }
     void getMe()
       .then(setUser)
-      .catch(() => clearAuthToken())
+      .catch(() => setUser(null))
       .finally(() => setAuthLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const handleUnauthorized = () => setUser(null);
+    window.addEventListener(AUTH_REQUIRED_EVENT, handleUnauthorized);
+    return () => window.removeEventListener(AUTH_REQUIRED_EVENT, handleUnauthorized);
   }, []);
 
   useEffect(() => {

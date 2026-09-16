@@ -33,6 +33,18 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class UpdateProfileRequest(BaseModel):
+    display_name: str = Field(min_length=2, max_length=50)
+
+    @field_validator("display_name")
+    @classmethod
+    def clean_display_name(cls, value: str) -> str:
+        cleaned = " ".join(value.split())
+        if len(cleaned) < 2:
+            raise ValueError("Display name is too short.")
+        return cleaned
+
+
 class UserResponse(BaseModel):
     id: str
     email: str
@@ -41,8 +53,6 @@ class UserResponse(BaseModel):
 
 
 class AuthResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
     user: UserResponse
 
 
