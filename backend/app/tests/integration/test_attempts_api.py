@@ -100,6 +100,26 @@ def test_attempt_history_lists_current_users_attempts() -> None:
     assert items[1]["is_correct"] is False
 
 
+def test_attempt_history_can_be_limited() -> None:
+    client = TestClient(app)
+    register_user(client)
+    client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_1", "answer": "wrong"},
+    )
+    client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_1", "answer": "x = 5"},
+    )
+
+    response = client.get("/api/v1/attempts/history?limit=1")
+
+    assert response.status_code == 200
+    items = response.json()["items"]
+    assert len(items) == 1
+    assert items[0]["answer"] == "x = 5"
+
+
 def test_attempt_history_is_isolated_between_users() -> None:
     first_client = TestClient(app)
     second_client = TestClient(app)

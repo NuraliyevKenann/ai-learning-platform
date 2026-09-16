@@ -33,15 +33,17 @@ def record_attempt(
         db.commit()
 
 
-def list_attempt_history(user_id: str) -> list[AttemptHistoryItem]:
+def list_attempt_history(user_id: str, limit: int | None = None) -> list[AttemptHistoryItem]:
     init_database()
     with SessionLocal() as db:
-        records = (
+        query = (
             db.query(AttemptRecord)
             .filter(AttemptRecord.user_id == user_id)
             .order_by(AttemptRecord.created_at.desc(), AttemptRecord.id.desc())
-            .all()
         )
+        if limit is not None:
+            query = query.limit(limit)
+        records = query.all()
         return [
             AttemptHistoryItem(
                 id=record.id,

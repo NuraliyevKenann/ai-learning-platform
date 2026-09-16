@@ -1,10 +1,20 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, attempts, exercises, goals, knowledge, recommendations, topics
+from app.api.v1.endpoints import (
+    auth,
+    attempts,
+    dashboard,
+    exercises,
+    goals,
+    knowledge,
+    recommendations,
+    topics,
+)
 
 api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
 api_router.include_router(goals.router, prefix="/goals", tags=["goals"])
 api_router.include_router(topics.router, prefix="/topics", tags=["topics"])
 api_router.include_router(exercises.router, prefix="/exercises", tags=["exercises"])
