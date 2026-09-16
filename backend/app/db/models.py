@@ -34,6 +34,36 @@ class KnowledgeStateRecord(Base):
     mastery: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
 
+class GoalRecord(Base):
+    __tablename__ = "goals"
+
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class TopicRecord(Base):
+    __tablename__ = "topics"
+
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    goal_id: Mapped[str] = mapped_column(ForeignKey("goals.id", ondelete="CASCADE"), index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    skill_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    order: Mapped[int] = mapped_column(nullable=False)
+
+
+class ExerciseRecord(Base):
+    __tablename__ = "exercises"
+
+    id: Mapped[str] = mapped_column(String(120), primary_key=True)
+    topic_id: Mapped[str] = mapped_column(ForeignKey("topics.id", ondelete="CASCADE"), index=True)
+    skill_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    prompt: Mapped[str] = mapped_column(Text, nullable=False)
+    expected_answer: Mapped[str] = mapped_column(Text, nullable=False)
+    difficulty: Mapped[str] = mapped_column(String(40), nullable=False)
+    order: Mapped[int] = mapped_column(nullable=False)
+
+
 class AttemptRecord(Base):
     __tablename__ = "attempts"
 
