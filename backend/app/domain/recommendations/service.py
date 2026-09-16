@@ -1,6 +1,6 @@
 """Recommendation application service."""
 
-from app.db.seed import EXERCISES
+from app.domain.content.repository import list_exercises_with_answers
 from app.domain.learning.repository import list_skill_mastery
 from app.domain.recommendations.repository import (
     get_current_recommendation as get_current_recommendation_from_repository,
@@ -36,7 +36,7 @@ def build_recommendation(
     next_exercise = next(
         (
             exercise
-            for exercise in EXERCISES
+            for exercise in list_exercises_with_answers()
             if exercise["id"] != exercise_id
             and knowledge_state.get(str(exercise["skill_id"]), 0) < 70
         ),

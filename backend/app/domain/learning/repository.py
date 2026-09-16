@@ -6,6 +6,11 @@ from app.db.models import KnowledgeStateRecord
 _initial_knowledge_state: dict[str, float] = {
     "skill_python_variables": 0.0,
     "skill_fastapi_routes": 0.0,
+    "skill_python_functions": 0.0,
+    "skill_python_lists": 0.0,
+    "skill_python_dicts": 0.0,
+    "skill_fastapi_path_params": 0.0,
+    "skill_fastapi_request_body": 0.0,
 }
 
 
