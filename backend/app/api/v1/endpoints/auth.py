@@ -71,7 +71,7 @@ def logout(
         path=settings.api_v1_prefix,
         secure=settings.session_cookie_secure,
         httponly=True,
-        samesite="lax",
+        samesite=settings.session_cookie_samesite,
     )
     return LogoutResponse(status="ok")
 
@@ -84,5 +84,5 @@ def _set_session_cookie(response: Response, token: str) -> None:
         path=settings.api_v1_prefix,
         secure=settings.session_cookie_secure,
         httponly=True,
-        samesite="lax",
+        samesite=settings.session_cookie_samesite,
     )
