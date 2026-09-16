@@ -10,15 +10,16 @@ from app.domain.recommendations.schemas import Recommendation
 from app.learning_engine.rules import classify_mastery
 
 
-def get_current_recommendation() -> Recommendation:
-    return Recommendation(**get_current_recommendation_from_repository())
+def get_current_recommendation(user_id: str) -> Recommendation:
+    return Recommendation(**get_current_recommendation_from_repository(user_id))
 
 
-def save_current_recommendation(recommendation: Recommendation) -> None:
-    set_current_recommendation(recommendation.model_dump())
+def save_current_recommendation(user_id: str, recommendation: Recommendation) -> None:
+    set_current_recommendation(user_id, recommendation.model_dump())
 
 
 def build_recommendation(
+    user_id: str,
     exercise_id: str,
     skill_id: str,
     is_correct: bool,
@@ -31,7 +32,7 @@ def build_recommendation(
             reason="The answer was not correct yet. Retry this exercise before moving on.",
         )
 
-    knowledge_state = list_skill_mastery()
+    knowledge_state = list_skill_mastery(user_id)
     next_exercise = next(
         (
             exercise

@@ -17,6 +17,7 @@ class ExerciseNotFoundError(Exception):
 
 
 def submit_attempt(
+    user_id: str,
     exercise_id: str,
     answer: str,
 ) -> AttemptResultResponse:
@@ -31,17 +32,18 @@ def submit_attempt(
     score = 100.0 if is_correct else 0.0
 
     skill_id = str(exercise["skill_id"])
-    old_mastery = get_mastery(skill_id)
+    old_mastery = get_mastery(user_id, skill_id)
     new_mastery = update_mastery(old_mastery=old_mastery, attempt_score=score)
-    set_mastery(skill_id=skill_id, mastery=new_mastery)
+    set_mastery(user_id=user_id, skill_id=skill_id, mastery=new_mastery)
 
     recommendation = build_recommendation(
+        user_id=user_id,
         exercise_id=exercise_id,
         skill_id=skill_id,
         is_correct=is_correct,
         mastery=new_mastery,
     )
-    save_current_recommendation(recommendation)
+    save_current_recommendation(user_id, recommendation)
 
     return AttemptResultResponse(
         status="ok",
