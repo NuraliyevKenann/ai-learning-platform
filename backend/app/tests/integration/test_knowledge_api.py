@@ -13,15 +13,22 @@ def test_reset_knowledge_state_returns_mastery_to_zero() -> None:
     )
     response = client.post("/api/v1/knowledge/reset")
     assert response.status_code == 200
-    assert response.json() == {
-        "status": "ok",
-        "items": [
-            {"user_id": user["id"], "skill_id": "skill_python_variables", "mastery": 0.0, "level": "weak"},
-            {"user_id": user["id"], "skill_id": "skill_http_api_basics", "mastery": 0.0, "level": "weak"},
-            {"user_id": user["id"], "skill_id": "skill_fastapi_routes", "mastery": 0.0, "level": "weak"},
-            {"user_id": user["id"], "skill_id": "skill_database_basics", "mastery": 0.0, "level": "weak"},
-        ],
+    body = response.json()
+    assert body["status"] == "ok"
+    assert len(body["items"]) == 12
+    assert body["items"][0] == {
+        "user_id": user["id"],
+        "skill_id": "skill_python_variables",
+        "mastery": 0.0,
+        "level": "weak",
     }
+    assert body["items"][-1] == {
+        "user_id": user["id"],
+        "skill_id": "skill_api_errors",
+        "mastery": 0.0,
+        "level": "weak",
+    }
+    assert all(item["mastery"] == 0.0 for item in body["items"])
 
 
 def test_progress_is_isolated_between_users() -> None:

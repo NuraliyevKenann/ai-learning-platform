@@ -10,7 +10,7 @@ def test_list_exercises_returns_public_learning_fields_only() -> None:
 
     assert response.status_code == 200
     items = response.json()["items"]
-    assert len(items) == 6
+    assert len(items) == 22
     assert items[0] == {
         "id": "ex_python_variables_1",
         "topic_id": "topic_python_variables",
