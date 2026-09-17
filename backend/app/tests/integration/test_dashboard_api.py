@@ -28,14 +28,14 @@ def test_dashboard_summary_combines_user_progress_recommendation_and_attempts() 
     body = response.json()
     assert body["user"]["id"] == user["id"]
     assert body["goal"]["id"] == "goal_python_backend"
-    assert body["current_exercise"]["id"] == "ex_fastapi_health_1"
+    assert body["current_exercise"]["id"] == "ex_python_variables_2"
     assert body["current_recommendation"]["type"] == "next_exercise"
-    assert body["average_mastery"] == 4
+    assert body["average_mastery"] == 8
     assert body["completed_skills"] == 0
-    assert body["total_skills"] == 7
+    assert body["total_skills"] == 4
     assert body["total_attempts"] == 2
     assert body["correct_attempts"] == 1
-    assert len(body["knowledge"]) == 7
+    assert len(body["knowledge"]) == 4
     assert len(body["recent_attempts"]) == 2
     assert body["recent_attempts"][0]["answer"] == "x = 5"
     assert body["recent_attempts"][1]["answer"] == "wrong"

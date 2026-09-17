@@ -16,8 +16,11 @@ export type Exercise = {
   id: string;
   topic_id: string;
   skill_id: string;
+  title: string;
   prompt: string;
   difficulty: string;
+  estimated_minutes: number;
+  hint: string;
 };
 
 export type KnowledgeStateItem = {
@@ -40,7 +43,22 @@ export type AttemptResult = {
   score: number;
   old_mastery: number;
   new_mastery: number;
+  feedback: string;
+  hint: string | null;
+  solution: string | null;
+  explanation: string;
   recommendation: Recommendation;
+};
+
+export type AttemptHistoryItem = {
+  id: number;
+  exercise_id: string;
+  answer: string;
+  is_correct: boolean;
+  score: number;
+  old_mastery: number;
+  new_mastery: number;
+  created_at: string;
 };
 
 export type User = {

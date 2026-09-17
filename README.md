@@ -1,4 +1,4 @@
-# AI Learning Platform
+# SkillWay
 
 Adaptive learning platform foundation for learning product development, backend,
 frontend, databases, AI integration, and future ML.

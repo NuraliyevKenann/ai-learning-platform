@@ -32,7 +32,7 @@ def test_current_recommendation_updates_after_attempt() -> None:
 
     assert response.status_code == 200
     assert response.json()["recommendation"]["type"] == "next_exercise"
-    assert response.json()["recommendation"]["exercise_id"] == "ex_fastapi_health_1"
+    assert response.json()["recommendation"]["exercise_id"] == "ex_python_variables_2"
 
 
 def test_current_recommendation_resets_with_knowledge_state() -> None:

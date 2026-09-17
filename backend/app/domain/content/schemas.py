@@ -21,8 +21,11 @@ class Exercise(BaseModel):
     id: str
     topic_id: str
     skill_id: str
+    title: str
     prompt: str
     difficulty: str
+    estimated_minutes: int
+    hint: str
 
 
 class GoalListResponse(BaseModel):
@@ -35,3 +38,24 @@ class TopicListResponse(BaseModel):
 
 class ExerciseListResponse(BaseModel):
     items: list[Exercise]
+
+
+class ExerciseProgressItem(BaseModel):
+    exercise_id: str
+    status: str
+    is_recommended: bool
+    attempts_count: int
+    last_score: float | None
+    best_score: float | None
+
+
+class ExerciseProgressSummary(BaseModel):
+    total: int
+    completed: int
+    current: int
+    remaining: int
+
+
+class ExerciseProgressResponse(BaseModel):
+    items: list[ExerciseProgressItem]
+    summary: ExerciseProgressSummary

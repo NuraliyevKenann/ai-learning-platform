@@ -6,7 +6,7 @@ from app.core.config import settings
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="AI Learning Platform")
+    app = FastAPI(title="SkillWay API")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.allowed_cors_origins,

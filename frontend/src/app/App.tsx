@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Flame,
-  LayoutDashboard, LoaderCircle, LogOut, Menu, RefreshCw, RotateCcw,
-  Route, Send, Sparkles, Target, X, XCircle,
+  LayoutDashboard, LoaderCircle, LogOut, RefreshCw, RotateCcw,
+  Route, Search, Send, Sparkles, Target, XCircle,
 } from "lucide-react";
 
 import { getMe, logout } from "../api/auth";
 import { submitAttempt } from "../api/attempts";
-import { AUTH_REQUIRED_EVENT } from "../api/client";
+import { API_DOCS_URL, AUTH_REQUIRED_EVENT } from "../api/client";
 import { getExercises } from "../api/exercises";
 import { getGoals } from "../api/goals";
 import { getKnowledgeState, resetKnowledgeState } from "../api/knowledge";
@@ -59,7 +59,8 @@ export function App() {
   const [submitting, setSubmitting] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [progressPulseKey, setProgressPulseKey] = useState(0);
 
   async function loadDashboard() {
     setLoading(true);
@@ -83,10 +84,30 @@ export function App() {
   }
 
   useEffect(() => {
+    let isMounted = true;
+    const fallbackTimeout = window.setTimeout(() => {
+      if (!isMounted) return;
+      setUser(null);
+      setAuthLoading(false);
+    }, 3000);
+
     void getMe()
-      .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setAuthLoading(false));
+      .then((currentUser) => {
+        if (isMounted) setUser(currentUser);
+      })
+      .catch(() => {
+        if (isMounted) setUser(null);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        window.clearTimeout(fallbackTimeout);
+        setAuthLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(fallbackTimeout);
+    };
   }, []);
 
   useEffect(() => {
@@ -110,6 +131,12 @@ export function App() {
     : 0;
   const completedSkills = data.knowledge.filter((item) => item.mastery >= 70).length;
 
+  useEffect(() => {
+    if (!toast) return;
+    const timeoutId = window.setTimeout(() => setToast(null), 2600);
+    return () => window.clearTimeout(timeoutId);
+  }, [toast]);
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!currentExercise || !answer.trim()) return;
@@ -120,7 +147,11 @@ export function App() {
       const knowledge = await getKnowledgeState();
       setResult(attempt);
       setData((current) => ({ ...current, knowledge: knowledge.items, recommendation: attempt.recommendation }));
-      if (attempt.is_correct) setAnswer("");
+      setToast(attempt.is_correct ? "Ответ принят. Прогресс обновлён." : "Ответ сохранён. Попробуйте ещё раз.");
+      setProgressPulseKey((key) => key + 1);
+      if (attempt.is_correct) {
+        setAnswer("");
+      }
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Не удалось проверить ответ");
     } finally {
@@ -137,6 +168,7 @@ export function App() {
       setData((current) => ({ ...current, knowledge: reset.items, recommendation: recommendation.recommendation }));
       setAnswer("");
       setResult(null);
+      setToast("Прогресс сброшен.");
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Не удалось сбросить прогресс");
     } finally {
@@ -168,33 +200,34 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <aside className={`sidebar ${sidebarOpen ? "sidebar--open" : ""}`}>
-        <div className="brand">
-          <div className="brand__mark"><Sparkles size={20} strokeWidth={2.2} /></div>
-          <span>skillway</span>
-          <button className="icon-button sidebar__close" onClick={() => setSidebarOpen(false)} aria-label="Закрыть меню"><X size={20} /></button>
+      {toast && (
+        <div className="toast-notice" role="status">
+          <Check size={17} />
+          <span>{toast}</span>
         </div>
-        <nav className="main-nav" aria-label="Главная навигация">
-          <p className="nav-label">Обучение</p>
-          <a className="nav-link nav-link--active" href="#dashboard"><LayoutDashboard size={19} /> Дэшборд</a>
-          <a className="nav-link" href="#exercise"><BookOpen size={19} /> Практика <span className="nav-count">{data.exercises.length}</span></a>
-          <a className="nav-link" href="#path"><Route size={19} /> Учебный путь</a>
-          <a className="nav-link" href="#progress"><Target size={19} /> Мой прогресс</a>
+      )}
+      <header className="app-header">
+        <a className="app-brand" href="#dashboard" aria-label="SkillWay home">
+          <span className="brand__mark"><Sparkles size={20} strokeWidth={2.2} /></span>
+          <strong>SkillWay</strong>
+        </a>
+        <nav className="top-nav" aria-label="??????? ?????????">
+          <a className="top-nav__link top-nav__link--highlight" href="#recommendations"><Sparkles size={18} /> ????????????</a>
+          <a className="top-nav__link" href="#dashboard"><LayoutDashboard size={18} /> ???????</a>
+          <a className="top-nav__link" href="#exercise"><BookOpen size={18} /> ??? ????????</a>
+          <a className="top-nav__link" href="#progress"><Target size={18} /> ????????</a>
+          <a className="top-nav__link" href="#search"><Search size={18} /> ?????</a>
+          <a className="top-nav__link top-nav__link--muted" href={API_DOCS_URL} target="_blank" rel="noreferrer"><CircleHelp size={18} /> API</a>
         </nav>
-        <div className="sidebar__support">
-          <a className="nav-link" href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer"><CircleHelp size={19} /> API документация</a>
-        </div>
-        <div className="profile-card">
+        <div className="top-profile">
           <div className="avatar">{getInitials(user.display_name)}</div>
           <div><strong>{user.display_name}</strong><span>{user.email}</span></div>
-          <button className="profile-logout" onClick={() => void handleLogout()} aria-label="Выйти из аккаунта" title="Выйти"><LogOut size={18} /></button>
+          <button className="profile-logout" onClick={() => void handleLogout()} aria-label="????? ?? ????????" title="?????"><LogOut size={18} /></button>
         </div>
-      </aside>
-      {sidebarOpen && <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Закрыть меню" />}
+      </header>
 
       <main className="main-content" id="dashboard">
         <header className="topbar">
-          <button className="icon-button menu-button" onClick={() => setSidebarOpen(true)} aria-label="Открыть меню"><Menu size={22} /></button>
           <div><p className="eyebrow">Ваше обучение</p><h1>С возвращением!</h1></div>
           <div className="topbar__actions">
             <div className="streak"><Flame size={17} fill="currentColor" /> 3 дня подряд</div>
@@ -220,10 +253,17 @@ export function App() {
               </div>
             </section>
 
+            <section className="search-card" id="search" aria-label="????? ?? ????????">
+              <div><span className="section-kicker">?????</span><h3>??????? ???? ??? ???????</h3></div>
+              <label className="search-box">
+                <Search size={18} />
+                <input type="search" placeholder="????????: FastAPI, SQL, ??????????" aria-label="????? ?? ?????" />
+              </label>
+            </section>
+
             <section className="stats-grid" id="progress" aria-label="Статистика обучения">
-              <article className="stat-card"><div className="stat-icon stat-icon--blue"><Target size={20} /></div><div><span>Общий прогресс</span><strong>{averageMastery}%</strong></div><span className="stat-trend">по навыкам</span></article>
+              <article className="stat-card stat-card--pulse" key={progressPulseKey}><div className="stat-icon stat-icon--blue"><Target size={20} /></div><div><span>Общий прогресс</span><strong>{averageMastery}%</strong></div><span className="stat-trend">по навыкам</span></article>
               <article className="stat-card"><div className="stat-icon stat-icon--mint"><Check size={20} /></div><div><span>Освоено навыков</span><strong>{completedSkills}</strong></div><span className="stat-trend">из {data.knowledge.length}</span></article>
-              <article className="stat-card"><div className="stat-icon stat-icon--orange"><BookOpen size={20} /></div><div><span>Доступно заданий</span><strong>{data.exercises.length}</strong></div><span className="stat-trend">MVP курс</span></article>
             </section>
 
             <div className="dashboard-grid">
@@ -249,7 +289,7 @@ export function App() {
               </section>
 
               <aside className="right-column">
-                <section className="recommendation-card">
+                <section className="recommendation-card" id="recommendations">
                   <div className="recommendation-card__icon"><Sparkles size={20} /></div>
                   <span className="section-kicker">Умная рекомендация</span>
                   <h3>{getRecommendationTitle(data.recommendation?.type)}</h3>
