@@ -34,6 +34,14 @@ class KnowledgeStateRecord(Base):
     mastery: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
 
+class UserCourseSelectionRecord(Base):
+    __tablename__ = "user_course_selections"
+
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    course_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    selected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class GoalRecord(Base):
     __tablename__ = "goals"
 

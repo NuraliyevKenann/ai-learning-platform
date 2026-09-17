@@ -7,6 +7,7 @@ from app.api.v1.endpoints import (
     exercises,
     goals,
     knowledge,
+    my_learning,
     recommendations,
     topics,
 )
@@ -20,6 +21,7 @@ api_router.include_router(topics.router, prefix="/topics", tags=["topics"])
 api_router.include_router(exercises.router, prefix="/exercises", tags=["exercises"])
 api_router.include_router(attempts.router, prefix="/attempts", tags=["attempts"])
 api_router.include_router(knowledge.router, prefix="/knowledge", tags=["knowledge"])
+api_router.include_router(my_learning.router, prefix="/my-learning", tags=["my-learning"])
 api_router.include_router(
     recommendations.router, prefix="/recommendations", tags=["recommendations"]
 )

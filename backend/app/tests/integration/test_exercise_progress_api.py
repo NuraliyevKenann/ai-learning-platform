@@ -20,7 +20,7 @@ def test_exercise_progress_starts_with_first_exercise_as_current() -> None:
 
     assert response.status_code == 200
     body = response.json()
-    assert body["summary"] == {"total": 6, "completed": 0, "current": 1, "remaining": 6}
+    assert body["summary"] == {"total": 22, "completed": 0, "current": 1, "remaining": 22}
     assert body["items"][0] == {
         "exercise_id": "ex_python_variables_1",
         "status": "current",
@@ -48,7 +48,7 @@ def test_exercise_progress_marks_completed_and_current_exercises() -> None:
 
     assert response.status_code == 200
     body = response.json()
-    assert body["summary"] == {"total": 6, "completed": 1, "current": 1, "remaining": 5}
+    assert body["summary"] == {"total": 22, "completed": 1, "current": 1, "remaining": 21}
     first, second = body["items"][0], body["items"][1]
     assert first["status"] == "completed"
     assert first["attempts_count"] == 1
