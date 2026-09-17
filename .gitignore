@@ -27,3 +27,7 @@ dist/
 *.log
 coverage/
 htmlcov/
+backend/skillway_local.db
+*.db
+*.sqlite
+*.sqlite3
