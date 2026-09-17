@@ -34,6 +34,26 @@ def test_submit_attempt_updates_mastery_and_recommendation() -> None:
     }
 
 
+def test_recommendation_skips_exercises_already_answered_correctly() -> None:
+    client = TestClient(app)
+    register_user(client)
+
+    first_response = client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_1", "answer": "x = 5"},
+    )
+    assert first_response.status_code == 200
+    assert first_response.json()["recommendation"]["exercise_id"] == "ex_python_variables_2"
+
+    second_response = client.post(
+        "/api/v1/attempts",
+        json={"exercise_id": "ex_python_variables_2", "answer": "score = 10\nscore = 15"},
+    )
+
+    assert second_response.status_code == 200
+    assert second_response.json()["recommendation"]["exercise_id"] == "ex_http_api_basics_1"
+
+
 def test_submit_attempt_returns_404_for_unknown_exercise() -> None:
     client = TestClient(app)
     register_user(client)

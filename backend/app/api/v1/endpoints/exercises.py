@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.domain.content.schemas import Exercise, ExerciseListResponse
-from app.domain.content.service import ExerciseNotFoundError, get_exercise
+from app.api.dependencies import get_current_user
+from app.domain.content.schemas import Exercise, ExerciseListResponse, ExerciseProgressResponse
+from app.domain.users.models import User
+from app.domain.content.service import ExerciseNotFoundError, get_exercise, get_exercise_progress
 from app.domain.content.service import list_exercises as list_exercises_from_service
 
 router = APIRouter()
@@ -20,6 +22,11 @@ def list_exercises(
             difficulty=difficulty,
         )
     )
+
+
+@router.get("/progress", response_model=ExerciseProgressResponse)
+def read_exercise_progress(user: User = Depends(get_current_user)) -> ExerciseProgressResponse:
+    return get_exercise_progress(user.id)
 
 
 @router.get("/{exercise_id}", response_model=Exercise)

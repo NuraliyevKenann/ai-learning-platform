@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Flame,
-  LayoutDashboard, LoaderCircle, LogOut, Menu, RefreshCw, RotateCcw,
-  Route, Send, Sparkles, Target, X, XCircle,
+  LayoutDashboard, LoaderCircle, LogOut, RefreshCw, RotateCcw,
+  Route, Search, Send, Sparkles, Target, XCircle,
 } from "lucide-react";
 
 import { getMe, logout } from "../api/auth";
@@ -59,7 +59,6 @@ export function App() {
   const [submitting, setSubmitting] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [progressPulseKey, setProgressPulseKey] = useState(0);
 
@@ -207,33 +206,28 @@ export function App() {
           <span>{toast}</span>
         </div>
       )}
-      <aside className={`sidebar ${sidebarOpen ? "sidebar--open" : ""}`}>
-        <div className="brand">
-          <div className="brand__mark"><Sparkles size={20} strokeWidth={2.2} /></div>
-          <span>SkillWay</span>
-          <button className="icon-button sidebar__close" onClick={() => setSidebarOpen(false)} aria-label="Закрыть меню"><X size={20} /></button>
-        </div>
-        <nav className="main-nav" aria-label="Главная навигация">
-          <p className="nav-label">Обучение</p>
-          <a className="nav-link nav-link--active" href="#dashboard"><LayoutDashboard size={19} /> Дэшборд</a>
-          <a className="nav-link" href="#exercise"><BookOpen size={19} /> Практика <span className="nav-count">{data.exercises.length}</span></a>
-          <a className="nav-link" href="#path"><Route size={19} /> Учебный путь</a>
-          <a className="nav-link" href="#progress"><Target size={19} /> Мой прогресс</a>
+      <header className="app-header">
+        <a className="app-brand" href="#dashboard" aria-label="SkillWay home">
+          <span className="brand__mark"><Sparkles size={20} strokeWidth={2.2} /></span>
+          <strong>SkillWay</strong>
+        </a>
+        <nav className="top-nav" aria-label="??????? ?????????">
+          <a className="top-nav__link top-nav__link--highlight" href="#recommendations"><Sparkles size={18} /> ????????????</a>
+          <a className="top-nav__link" href="#dashboard"><LayoutDashboard size={18} /> ???????</a>
+          <a className="top-nav__link" href="#exercise"><BookOpen size={18} /> ??? ????????</a>
+          <a className="top-nav__link" href="#progress"><Target size={18} /> ????????</a>
+          <a className="top-nav__link" href="#search"><Search size={18} /> ?????</a>
+          <a className="top-nav__link top-nav__link--muted" href={API_DOCS_URL} target="_blank" rel="noreferrer"><CircleHelp size={18} /> API</a>
         </nav>
-        <div className="sidebar__support">
-          <a className="nav-link" href={API_DOCS_URL} target="_blank" rel="noreferrer"><CircleHelp size={19} /> API документация</a>
-        </div>
-        <div className="profile-card">
+        <div className="top-profile">
           <div className="avatar">{getInitials(user.display_name)}</div>
           <div><strong>{user.display_name}</strong><span>{user.email}</span></div>
-          <button className="profile-logout" onClick={() => void handleLogout()} aria-label="Выйти из аккаунта" title="Выйти"><LogOut size={18} /></button>
+          <button className="profile-logout" onClick={() => void handleLogout()} aria-label="????? ?? ????????" title="?????"><LogOut size={18} /></button>
         </div>
-      </aside>
-      {sidebarOpen && <button className="sidebar-backdrop" onClick={() => setSidebarOpen(false)} aria-label="Закрыть меню" />}
+      </header>
 
       <main className="main-content" id="dashboard">
         <header className="topbar">
-          <button className="icon-button menu-button" onClick={() => setSidebarOpen(true)} aria-label="Открыть меню"><Menu size={22} /></button>
           <div><p className="eyebrow">Ваше обучение</p><h1>С возвращением!</h1></div>
           <div className="topbar__actions">
             <div className="streak"><Flame size={17} fill="currentColor" /> 3 дня подряд</div>
@@ -257,6 +251,14 @@ export function App() {
                 <div className="goal-progress__ring" style={{ "--progress": `${averageMastery * 3.6}deg` } as React.CSSProperties}><div><strong>{averageMastery}%</strong><span>освоено</span></div></div>
                 <p>{completedSkills} из {data.knowledge.length} навыков завершено</p>
               </div>
+            </section>
+
+            <section className="search-card" id="search" aria-label="????? ?? ????????">
+              <div><span className="section-kicker">?????</span><h3>??????? ???? ??? ???????</h3></div>
+              <label className="search-box">
+                <Search size={18} />
+                <input type="search" placeholder="????????: FastAPI, SQL, ??????????" aria-label="????? ?? ?????" />
+              </label>
             </section>
 
             <section className="stats-grid" id="progress" aria-label="Статистика обучения">
@@ -287,7 +289,7 @@ export function App() {
               </section>
 
               <aside className="right-column">
-                <section className="recommendation-card">
+                <section className="recommendation-card" id="recommendations">
                   <div className="recommendation-card__icon"><Sparkles size={20} /></div>
                   <span className="section-kicker">Умная рекомендация</span>
                   <h3>{getRecommendationTitle(data.recommendation?.type)}</h3>
