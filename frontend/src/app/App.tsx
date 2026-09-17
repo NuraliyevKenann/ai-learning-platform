@@ -85,10 +85,30 @@ export function App() {
   }
 
   useEffect(() => {
+    let isMounted = true;
+    const fallbackTimeout = window.setTimeout(() => {
+      if (!isMounted) return;
+      setUser(null);
+      setAuthLoading(false);
+    }, 3000);
+
     void getMe()
-      .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setAuthLoading(false));
+      .then((currentUser) => {
+        if (isMounted) setUser(currentUser);
+      })
+      .catch(() => {
+        if (isMounted) setUser(null);
+      })
+      .finally(() => {
+        if (!isMounted) return;
+        window.clearTimeout(fallbackTimeout);
+        setAuthLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+      window.clearTimeout(fallbackTimeout);
+    };
   }, []);
 
   useEffect(() => {
