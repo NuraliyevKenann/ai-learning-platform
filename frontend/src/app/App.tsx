@@ -236,6 +236,11 @@ export function App() {
     : courseOptions;
 
   useEffect(() => {
+    setAnswer("");
+    setResult(null);
+  }, [currentExercise?.id]);
+
+  useEffect(() => {
     if (!toast) return;
     const timeoutId = window.setTimeout(() => setToast(null), 2600);
     return () => window.clearTimeout(timeoutId);

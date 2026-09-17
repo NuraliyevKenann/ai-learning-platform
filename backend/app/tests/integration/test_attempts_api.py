@@ -89,6 +89,25 @@ def test_submit_attempt_accepts_answer_with_different_spacing() -> None:
     assert response.json()["new_mastery"] == 30.0
 
 
+
+def test_submit_attempt_accepts_fastapi_decorator_variants() -> None:
+    client = TestClient(app)
+    register_user(client)
+
+    for answer in [
+        '@app.get("/api/v1/health")',
+        "@app.get('/api/v1/health')",
+        'app.get("/api/v1/health")',
+        '@app.get( \u201c/api/v1/health\u201d )',
+        '```python\n@app.get("/api/v1/health")\n```',
+    ]:
+        response = client.post(
+            "/api/v1/attempts",
+            json={"exercise_id": "ex_fastapi_routes_2", "answer": answer},
+        )
+        assert response.status_code == 200
+        assert response.json()["is_correct"] is True
+
 def test_submit_attempt_returns_hint_and_solution_for_wrong_answer() -> None:
     client = TestClient(app)
     register_user(client)

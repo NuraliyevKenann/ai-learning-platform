@@ -99,7 +99,12 @@ def _single_answer_matches(submitted_answer: str, expected_answer: str) -> bool:
     if submitted_json is not None and expected_json is not None:
         return submitted_json == expected_json
 
-    return _normalize_text(submitted_answer) == _normalize_text(expected_answer)
+    normalized_submitted = _normalize_text(submitted_answer)
+    normalized_expected = _normalize_text(expected_answer)
+    if normalized_submitted == normalized_expected:
+        return True
+
+    return _normalize_code_answer(submitted_answer) == _normalize_code_answer(expected_answer)
 
 
 def _parse_json(value: str) -> object | None:
@@ -110,4 +115,27 @@ def _parse_json(value: str) -> object | None:
 
 
 def _normalize_text(value: str) -> str:
-    return "".join(value.lower().split())
+    return "".join(_clean_answer(value).lower().split())
+
+
+def _normalize_code_answer(value: str) -> str:
+    normalized = _normalize_text(value)
+    if normalized.startswith("@"):  # allow decorator answers with or without @
+        normalized = normalized[1:]
+    return normalized
+
+
+def _clean_answer(value: str) -> str:
+    cleaned = value.strip()
+    if cleaned.startswith("```") and cleaned.endswith("```"):
+        cleaned = cleaned.strip("`").strip()
+        lines = cleaned.splitlines()
+        if lines and lines[0].strip().lower() in {"python", "py", "json", "sql"}:
+            cleaned = "\n".join(lines[1:])
+    return (
+        cleaned
+        .replace("\u201c", '"')
+        .replace("\u201d", '"')
+        .replace("\u2018", "'")
+        .replace("\u2019", "'")
+    )
