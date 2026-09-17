@@ -17,8 +17,8 @@ class ExerciseNotFoundError(Exception):
     """Raised when an attempt references an unknown exercise."""
 
 
-def get_attempt_history(user_id: str) -> AttemptHistoryResponse:
-    return AttemptHistoryResponse(items=list_attempt_history(user_id))
+def get_attempt_history(user_id: str, limit: int | None = None) -> AttemptHistoryResponse:
+    return AttemptHistoryResponse(items=list_attempt_history(user_id, limit=limit))
 
 
 def submit_attempt(
