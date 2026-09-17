@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowRight, BookOpen, Check, ChevronRight, CircleHelp, Flame,
-  LayoutDashboard, LoaderCircle, LogOut, RefreshCw, RotateCcw,
-  Route, Search, Send, Sparkles, Target, XCircle,
+  ArrowRight, BookOpen, Bot, Check, ChevronRight, CircleHelp, Flame,
+  Languages, LoaderCircle, LogOut, RefreshCw, RotateCcw,
+  Search, Send, ShieldCheck, Sparkles, Target, XCircle,
 } from "lucide-react";
 
 import { getMe, logout } from "../api/auth";
@@ -15,6 +15,9 @@ import { getCurrentRecommendation } from "../api/recommendations";
 import { getTopics } from "../api/topics";
 import { AuthScreen } from "../components/AuthScreen";
 import type { AttemptResult, Exercise, Goal, KnowledgeStateItem, Recommendation, Topic, User } from "../types/domain";
+
+type Language = "ru" | "en";
+type CourseId = "python" | "ml" | "cybersecurity";
 
 type DashboardData = {
   goals: Goal[];
@@ -61,6 +64,8 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [progressPulseKey, setProgressPulseKey] = useState(0);
+  const [language, setLanguage] = useState<Language>("ru");
+  const [selectedCourseId, setSelectedCourseId] = useState<CourseId>("python");
 
   async function loadDashboard() {
     setLoading(true);
@@ -130,6 +135,34 @@ export function App() {
     ? Math.round(data.knowledge.reduce((sum, item) => sum + item.mastery, 0) / data.knowledge.length)
     : 0;
   const completedSkills = data.knowledge.filter((item) => item.mastery >= 70).length;
+  const isEnglish = language === "en";
+  const courseOptions = [
+    {
+      id: "python" as const,
+      title: "Python Backend",
+      status: isEnglish ? "Current course" : "Текущий курс",
+      description: isEnglish ? "FastAPI, API, databases, and backend foundation." : "FastAPI, API, базы данных и основа backend.",
+      learningTitle: data.goals[0]?.title ?? "Python Backend Developer",
+      learningDescription: data.goals[0]?.description ?? (isEnglish ? "Learn through short practical exercises." : "Учитесь через короткие практические задания."),
+    },
+    {
+      id: "ml" as const,
+      title: "ML Engineer",
+      status: isEnglish ? "Planned" : "В плане",
+      description: isEnglish ? "Data, models, evaluation, and production ML workflow." : "Данные, модели, evaluation и production ML workflow.",
+      learningTitle: "ML Engineer",
+      learningDescription: isEnglish ? "This path will include data preparation, model evaluation, and ML systems." : "Это направление будет включать подготовку данных, evaluation и ML systems.",
+    },
+    {
+      id: "cybersecurity" as const,
+      title: "Cybersecurity",
+      status: isEnglish ? "Planned" : "В плане",
+      description: isEnglish ? "Web security, auth, threats, and secure backend basics." : "Web security, auth, threats и основы безопасного backend.",
+      learningTitle: "Cybersecurity",
+      learningDescription: isEnglish ? "This path will focus on web security, auth flows, and secure backend habits." : "Это направление будет про web security, auth flows и привычки безопасного backend.",
+    },
+  ];
+  const selectedCourse = courseOptions.find((course) => course.id === selectedCourseId) ?? courseOptions[0];
 
   useEffect(() => {
     if (!toast) return;
@@ -182,6 +215,13 @@ export function App() {
     document.querySelector(".exercise-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  function selectCourse(courseId: CourseId) {
+    setSelectedCourseId(courseId);
+    window.setTimeout(() => {
+      document.querySelector("#my-learning")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+  }
+
   async function handleLogout() {
     await logout();
     setUser(null);
@@ -211,18 +251,21 @@ export function App() {
           <span className="brand__mark"><Sparkles size={20} strokeWidth={2.2} /></span>
           <strong>SkillWay</strong>
         </a>
-        <nav className="top-nav" aria-label="??????? ?????????">
-          <a className="top-nav__link top-nav__link--highlight" href="#recommendations"><Sparkles size={18} /> ????????????</a>
-          <a className="top-nav__link" href="#dashboard"><LayoutDashboard size={18} /> ???????</a>
-          <a className="top-nav__link" href="#exercise"><BookOpen size={18} /> ??? ????????</a>
-          <a className="top-nav__link" href="#progress"><Target size={18} /> ????????</a>
-          <a className="top-nav__link" href="#search"><Search size={18} /> ?????</a>
+        <nav className="top-nav" aria-label={isEnglish ? "Main navigation" : "Главная навигация"}>
+          <a className="top-nav__link" href="#course-recommendations"><Sparkles size={18} /> {isEnglish ? "Recommendations" : "Рекомендации"}</a>
+          <a className="top-nav__link" href="#my-learning"><BookOpen size={18} /> {isEnglish ? "My learning" : "Моё обучение"}</a>
+          <a className="top-nav__link" href="#progress"><Target size={18} /> {isEnglish ? "Progress" : "Прогресс"}</a>
+          <a className="top-nav__link" href="#search"><Search size={18} /> {isEnglish ? "Search" : "Поиск"}</a>
           <a className="top-nav__link top-nav__link--muted" href={API_DOCS_URL} target="_blank" rel="noreferrer"><CircleHelp size={18} /> API</a>
         </nav>
+        <div className="top-actions">
+          <button className="top-action-button" type="button" onClick={() => setLanguage(isEnglish ? "ru" : "en")} title={isEnglish ? "Switch to Russian" : "Сменить язык на английский"}><Languages size={17} /> {language.toUpperCase()}</button>
+          <button className="top-action-button top-action-button--ai" type="button" title={isEnglish ? "AI assistant" : "ИИ ассистент"}><Bot size={17} /> AI</button>
+        </div>
         <div className="top-profile">
           <div className="avatar">{getInitials(user.display_name)}</div>
           <div><strong>{user.display_name}</strong><span>{user.email}</span></div>
-          <button className="profile-logout" onClick={() => void handleLogout()} aria-label="????? ?? ????????" title="?????"><LogOut size={18} /></button>
+          <button className="profile-logout" onClick={() => void handleLogout()} aria-label="Выйти из аккаунта" title="Выйти"><LogOut size={18} /></button>
         </div>
       </header>
 
@@ -241,11 +284,36 @@ export function App() {
           <div className="loading-state"><LoaderCircle className="spin" size={28} /> Загружаем ваш учебный план…</div>
         ) : (
           <>
-            <section className="welcome-card">
+            <section className="course-recommendations" id="course-recommendations" aria-label={isEnglish ? "Recommended tracks" : "Рекомендованные направления"}>
+              <div className="section-heading course-recommendations__heading">
+                <div><span className="section-kicker">{isEnglish ? "Recommendations" : "Рекомендации"}</span><h2>{isEnglish ? "Choose a learning track" : "Выберите направление обучения"}</h2></div>
+                <span>{courseOptions.length} {isEnglish ? "tracks" : "направления"}</span>
+              </div>
+              <div className="course-grid">
+                {courseOptions.map((course) => (
+                  <article className={`course-card ${selectedCourseId === course.id ? "course-card--active" : ""}`} key={course.id}>
+                    <div className="course-card__icon">
+                      {course.id === "python" ? <BookOpen size={22} /> : course.id === "ml" ? <Sparkles size={22} /> : <ShieldCheck size={22} />}
+                    </div>
+                    <span>{course.status}</span>
+                    <h3>{course.title}</h3>
+                    <p>{course.description}</p>
+                    <button type="button" onClick={() => selectCourse(course.id)}>
+                      {selectedCourseId === course.id
+                        ? (isEnglish ? "Open my learning" : "Открыть моё обучение")
+                        : (isEnglish ? "Choose track" : "Выбрать курс")}
+                      <ChevronRight size={16} />
+                    </button>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="welcome-card" id="my-learning">
               <div>
-                <span className="status-pill"><span /> Активная цель</span>
-                <h2>{data.goals[0]?.title ?? "Python Backend Developer"}</h2>
-                <p>{data.goals[0]?.description ?? "Учитесь через короткие практические задания."}</p>
+                <span className="status-pill"><span /> {isEnglish ? "My learning" : "Моё обучение"}</span>
+                <h2>{selectedCourse.learningTitle}</h2>
+                <p>{selectedCourse.learningDescription}</p>
               </div>
               <div className="goal-progress">
                 <div className="goal-progress__ring" style={{ "--progress": `${averageMastery * 3.6}deg` } as React.CSSProperties}><div><strong>{averageMastery}%</strong><span>освоено</span></div></div>
@@ -253,11 +321,11 @@ export function App() {
               </div>
             </section>
 
-            <section className="search-card" id="search" aria-label="????? ?? ????????">
-              <div><span className="section-kicker">?????</span><h3>??????? ???? ??? ???????</h3></div>
+            <section className="search-card" id="search" aria-label={isEnglish ? "Learning search" : "Поиск по обучению"}>
+              <div><span className="section-kicker">{isEnglish ? "Search" : "Поиск"}</span><h3>{isEnglish ? "Find a topic or exercise" : "Найдите тему или задание"}</h3></div>
               <label className="search-box">
                 <Search size={18} />
-                <input type="search" placeholder="????????: FastAPI, SQL, ??????????" aria-label="????? ?? ?????" />
+                <input type="search" placeholder={isEnglish ? "For example: FastAPI, SQL, variables" : "Например: FastAPI, SQL, переменные"} aria-label={isEnglish ? "Course search" : "Поиск по курсу"} />
               </label>
             </section>
 
