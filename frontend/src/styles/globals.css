@@ -295,6 +295,7 @@ h1 { margin-bottom: 0; font-size: clamp(25px, 2.5vw, 34px); letter-spacing: -.04
 .course-card h3 { margin: 5px 0 7px; font-size: 20px; letter-spacing: -.03em; }
 .course-card p { margin-bottom: 15px; color: #657086; font-size: 12px; line-height: 1.55; }
 .course-card button { margin-top: auto; padding: 0; display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: #395f91; font-size: 12px; font-weight: 900; }
+.course-card button:disabled { cursor: wait; opacity: .7; }
 .empty-state { padding: 34px; border: 1px dashed #d7ddcf; border-radius: 10px; background: #f8faf7; color: #6c7586; font-weight: 800; text-align: center; }
 .top-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
 .top-action-button { min-height: 40px; padding: 0 11px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #dfe4dc; border-radius: 9px; background: #fff; color: #5f6b80; font-size: 12px; font-weight: 900; box-shadow: 0 8px 18px rgba(23,33,58,.05); transition: .2s ease; }

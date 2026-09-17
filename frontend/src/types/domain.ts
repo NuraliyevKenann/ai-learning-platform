@@ -71,3 +71,23 @@ export type User = {
 export type AuthResponse = {
   user: User;
 };
+
+export type CourseSummary = {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  goal_id: string | null;
+  selected: boolean;
+  selected_at: string | null;
+};
+
+export type CourseListResponse = {
+  items: CourseSummary[];
+};
+
+export type MyLearningResponse = {
+  selected_courses: CourseSummary[];
+  active_course: CourseSummary | null;
+  available_courses: CourseSummary[];
+};

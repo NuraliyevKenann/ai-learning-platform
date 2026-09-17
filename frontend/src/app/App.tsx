@@ -11,13 +11,14 @@ import { API_DOCS_URL, AUTH_REQUIRED_EVENT } from "../api/client";
 import { getExercises } from "../api/exercises";
 import { getGoals } from "../api/goals";
 import { getKnowledgeState, resetKnowledgeState } from "../api/knowledge";
+import { getMyLearning, selectMyLearningCourse } from "../api/myLearning";
 import { getCurrentRecommendation } from "../api/recommendations";
 import { getTopics } from "../api/topics";
 import { AuthScreen } from "../components/AuthScreen";
-import type { AttemptResult, Exercise, Goal, KnowledgeStateItem, Recommendation, Topic, User } from "../types/domain";
+import type { AttemptResult, CourseSummary, Exercise, Goal, KnowledgeStateItem, Recommendation, Topic, User } from "../types/domain";
 
 type Language = "ru" | "en";
-type CourseId = "python" | "ml" | "cybersecurity";
+type CourseId = "python" | "ml" | "cybersecurity" | string;
 type ActivePage = "recommendations" | "my-learning" | "progress" | "search";
 type ThemeMode = "light" | "dark";
 
@@ -71,6 +72,8 @@ export function App() {
   const [progressPulseKey, setProgressPulseKey] = useState(0);
   const [language, setLanguage] = useState<Language>("ru");
   const [selectedCourseId, setSelectedCourseId] = useState<CourseId>("python");
+  const [backendCourses, setBackendCourses] = useState<CourseSummary[]>([]);
+  const [savingCourseId, setSavingCourseId] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<ActivePage>("recommendations");
   const [themeMode, setThemeMode] = useState<ThemeMode>("light");
   const [courseSearch, setCourseSearch] = useState("");
@@ -79,8 +82,8 @@ export function App() {
     setLoading(true);
     setError(null);
     try {
-      const [goals, topics, exercises, knowledge, recommendation] = await Promise.all([
-        getGoals(), getTopics(), getExercises(), getKnowledgeState(), getCurrentRecommendation(),
+      const [goals, topics, exercises, knowledge, recommendation, myLearning] = await Promise.all([
+        getGoals(), getTopics(), getExercises(), getKnowledgeState(), getCurrentRecommendation(), getMyLearning(),
       ]);
       setData({
         goals: goals.items,
@@ -89,6 +92,8 @@ export function App() {
         knowledge: knowledge.items,
         recommendation: recommendation.recommendation,
       });
+      setBackendCourses(myLearning.available_courses);
+      setSelectedCourseId(myLearning.active_course?.id ?? "python");
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Не удалось загрузить данные");
     } finally {
@@ -226,7 +231,15 @@ export function App() {
       learningDescription: isEnglish ? "This path will focus on web security, auth flows, and secure backend habits." : "Это направление будет про web security, auth flows и привычки безопасного backend.",
       keywords: "cybersecurity security cyber безопасность кибербезопасность auth threats",
     },
-  ];
+  ].map((course) => {
+    const backendCourse = backendCourses.find((item) => item.id === course.id);
+    return {
+      ...course,
+      selected: backendCourse?.selected ?? course.id === selectedCourseId,
+      selectedAt: backendCourse?.selected_at ?? null,
+      status: backendCourse?.selected ? copy.currentCourse : course.status,
+    };
+  });
   const selectedCourse = courseOptions.find((course) => course.id === selectedCourseId) ?? courseOptions[0];
   const normalizedCourseSearch = courseSearch.trim().toLowerCase();
   const filteredCourseOptions = normalizedCourseSearch
@@ -291,9 +304,20 @@ export function App() {
     document.querySelector(".exercise-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  function selectCourse(courseId: CourseId) {
-    setSelectedCourseId(courseId);
-    setActivePage("my-learning");
+  async function selectCourse(courseId: CourseId) {
+    setSavingCourseId(String(courseId));
+    setError(null);
+    try {
+      const myLearning = await selectMyLearningCourse(String(courseId));
+      setBackendCourses(myLearning.available_courses);
+      setSelectedCourseId(myLearning.active_course?.id ?? courseId);
+      setActivePage("my-learning");
+      setToast(isEnglish ? "Course saved to My learning." : "Курс сохранён в Моё обучение.");
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Не удалось сохранить курс");
+    } finally {
+      setSavingCourseId(null);
+    }
   }
 
   async function handleLogout() {
@@ -378,16 +402,18 @@ export function App() {
                 {filteredCourseOptions.length ? (
                   <div className="course-grid">
                     {filteredCourseOptions.map((course) => (
-                      <article className={`course-card ${selectedCourseId === course.id ? "course-card--active" : ""}`} key={course.id}>
+                      <article className={`course-card ${course.selected ? "course-card--active" : ""}`} key={course.id}>
                         <div className="course-card__icon">
                           {course.id === "python" ? <BookOpen size={22} /> : course.id === "ml" ? <Sparkles size={22} /> : <ShieldCheck size={22} />}
                         </div>
                         <span>{course.status}</span>
                         <h3>{course.title}</h3>
                         <p>{course.description}</p>
-                        <button type="button" onClick={() => selectCourse(course.id)}>
-                          {selectedCourseId === course.id ? copy.openMyLearning : copy.chooseCourse}
-                          <ChevronRight size={16} />
+                        <button type="button" onClick={() => void selectCourse(course.id)} disabled={savingCourseId === course.id}>
+                          {savingCourseId === course.id
+                            ? (isEnglish ? "Saving..." : "Сохраняем…")
+                            : course.selected ? copy.openMyLearning : copy.chooseCourse}
+                          {savingCourseId === course.id ? <LoaderCircle className="spin" size={16} /> : <ChevronRight size={16} />}
                         </button>
                       </article>
                     ))}
